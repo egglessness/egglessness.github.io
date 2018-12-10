@@ -185,8 +185,9 @@ body {
         }
         &-title {
             margin-bottom: .3rem;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 600;
+            word-break: break-all;
         }
         &-date {
             color: $base-lighten-color;
