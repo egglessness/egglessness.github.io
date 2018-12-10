@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abusing Facebook prefetching to leak users IP address and user agent</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css" type="text/css">
+
+  <!-- Font -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href='//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
+
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed for surruskij" href="/feed.xml" />
+  <!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Abusing Facebook prefetching to leak users IP address and user agent | surruskij</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Abusing Facebook prefetching to leak users IP address and user agent" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Prefetching could be useful to minimise loading times, but they can be useful to leak some users sensitive data as well." />
+<meta property="og:description" content="Prefetching could be useful to minimise loading times, but they can be useful to leak some users sensitive data as well." />
+<link rel="canonical" href="http://localhost:4000/2018/abusing-facebook-prefetching/" />
+<meta property="og:url" content="http://localhost:4000/2018/abusing-facebook-prefetching/" />
+<meta property="og:site_name" content="surruskij" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2018-12-04T00:00:00+01:00" />
+<script type="application/ld+json">
+{"mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2018/abusing-facebook-prefetching/"},"url":"http://localhost:4000/2018/abusing-facebook-prefetching/","description":"Prefetching could be useful to minimise loading times, but they can be useful to leak some users sensitive data as well.","headline":"Abusing Facebook prefetching to leak users IP address and user agent","@type":"BlogPosting","dateModified":"2018-12-04T00:00:00+01:00","datePublished":"2018-12-04T00:00:00+01:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+
+  <!-- Google Analytics -->
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-130789124-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+
+
+</head>
+
+<body>
+  <div class="content-container">
+    <header>
+  <div class="header-small">
+    <a href="http://localhost:4000"><img id="logo" src="http://localhost:4000/assets/images/logo.png"></a>
+  </div>
+</header>
+<div class="post">
+  <div class="post-title">Abusing Facebook prefetching to leak users IP address and user agent</div>
+  <span class="post-date">
+    <time>04 Dec 2018</time>
+  </span>
+  <div class="post-tag">
+    <ul>
+      
+      <li>
+        <a href="http://localhost:4000/tags#responsible disclosure">
+          <span>responsible disclosure</span>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a href="http://localhost:4000/tags#facebook">
+          <span>facebook</span>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a href="http://localhost:4000/tags#feature abuse">
+          <span>feature abuse</span>
+        </a>
+      </li>
+      
+      
+    </ul>
+  </div>
+
+  <p>In 2016 Facebook, aiming to improve final users experience, introduced <strong>link prefetching</strong> as a way to reduce load time of external webpages. 
+As the <a href="https://www.facebook.com/business/help/1514372351922333">related Facebook help page</a> states:</p>
+<blockquote>
+  <p>Prefetching allows Facebook to download mobile content before someone clicks a link. […] When someone clicks the link or call to action on your ad, a portion of the web page it’s linked to may already have been prefetched and will appear more quickly.</p>
+</blockquote>
+
+<p>Essentially, when you share on Facebook a rich link (i.e. a link that features title, thumbnail and description), every time someone comes across to that post, <strong>without even clicking it</strong>, his device loads the page and stores it for a certain amount of time: if the user decides to click on link, the page is already loaded.</p>
+
+<p>Cool, right? User experience can benefit from this, and page load times are slightly faster.<br />
+But, as always, cool features can be used by attackers to achieve completely different results.</p>
+
+<p>Since every time the device prefetches a webpage it fires a <code class="highlighter-rouge">GET</code> request to the server in which the page is located, I decided to do a simple experiment within my own local network.</p>
+
+<p>I set up a simple server using <code class="highlighter-rouge">Flask</code>, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a URL to my server:</p>
+
+<p><img src="media/15392809752456/Screen%20Shot%202018-10-11%20at%2018.36.36.png" alt="Screen Shot 2018-10-11 at 18.36.36-w526" /></p>
+
+<p>I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Referer: http://m.facebook.com
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
+(KHTML, like Gecko) Mobile/15G77 [FBAN/FBIOS;FBDV/iPhone7,1;FBMD/iPhone;FBSN/iOS;FBSV/11.4.1;\
+FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
+Connection: keep-alive
+X-Purpose: preview
+Host: 192.168.0.24
+X-Fb-Http-Engine: Liger
+X-Fb-Connection-Type: wifi
+Accept-Encoding: gzip, deflate
+
+
+192.168.0.23 - - [11/Oct/2018 18:41:02] "GET / HTTP/1.1" 200 -
+</code></pre></div></div>
+
+<p>We can figure out that this request was fired for prefetching purposes by looking at these specific fields:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>X-Purpose: preview
+X-Fb-Http-Engine: Liger
+</code></pre></div></div>
+
+<p>There are plenty of useful information about our target:</p>
+<ul>
+  <li>Device model</li>
+  <li>iOS version</li>
+  <li>Carrier operator (FBCR)</li>
+  <li>Device locale</li>
+  <li>IP address (and so very coarse location information if the target isn’t using proxies/VPNs)</li>
+</ul>
+
+<p>Obviously, this works also outside the local network: I just set up a simple IP logger service (like <a href="https://grabify.link/">Grabify</a>) to generate a URL that can stealthy log request headers and redirect the user to wanted location.<br />
+The result? I was able to collect the same aforementioned data with no effort.</p>
+
+<h3 id="affected-users">Affected users</h3>
+<p>At the time of the discovery, only iOS users having the build <code class="highlighter-rouge">192.0.0.61.85</code> installed were affected.</p>
+
+<p>I tried to repeat the same steps using an Android device, but it seemed that this was gonna work only on iOS.</p>
+
+<h3 id="unaware-attackers">Unaware attackers</h3>
+<p>When it comes to describe a security/privacy vulnerability, it’s always obvious to say that users are unaware; however, since link prefetching is a feature enabled by default, potentially every person that shared rich links was an unaware attacker, having the possibility to spy on users behaviour, using his own profile, a group or a page as attack vector.
+Moreover by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.</p>
+
+<p>One can argue: “IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back”.<br />
+The fact is that, in this particular situation, <strong>people were not aware of this behaviour</strong>, because:</p>
+
+<ul>
+  <li>the only reference given by Facebook can be found in the help section for businesses</li>
+  <li>even if a user read that passage, there aren’t any details on the particularly abundant amount of data that is sent just for the sake of previewing.</li>
+</ul>
+
+<p>I just want to stress more on the second point.
+An <a href="https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-agent">experiment</a> carried by the EFF (Electronic Frontier Foundation) in 2010 showed that:</p>
+<blockquote>
+  <p>Browsers usually convey between 5 and 15 bits of identifying information, about 10.5 bits on average. 
+10 bits of identifying information would allow you to be picked out of a crowd of 2^10 , or 1024 people.</p>
+</blockquote>
+
+<p>The fun fact is that in this experiment analysed user agents were like:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.195.27 Safari/532.0
+</code></pre></div></div>
+
+<p>which is nothing compared with the huge amount of data carried by the FB in-app browser:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
+(KHTML, like Gecko) Mobile/15G77 [FBAN/FBIOS;FBDV/iPhone7,1;FBMD/iPhone;FBSN/iOS;FBSV/11.4.1;\
+FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
+</code></pre></div></div>
+
+<p>For this reason, even if I didn’t run any actual experiment, I believe that the number of bits of entropy on the latter kind of user agent can be far higher, thus leading to an unique identification within an even larger crowd of people.</p>
+
+<h3 id="timetable">Timetable</h3>
+<ul>
+  <li>11 October 2018: vulnerability found and reported to Facebook</li>
+  <li>22 October 2018: investigation started by the appropriate product team</li>
+  <li>5 November 2018 (ish): prefetching appears to be disabled, thus closing the vulnerability</li>
+  <li>4 December 2018: official notification by the security team, saying that everything was patched</li>
+</ul>
+
+
+  <!-- Disqus -->
+  
+  <div class="post-disqus">
+      <section id="disqus_thread"></section>
+      <script>
+
+/**
+*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables */
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+s.src = '//surruskij-blog.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  </div>
+  
+
+</div>
+
+
+    <!-- Documents about icons are here: http://fontawesome.io/icons/ -->
+<div class="footer">
+  <hr />
+  <div class="footer-link">
+    
+	
+	
+	
+	
+
+    
+    <a href="https://twitter.com/enea_fardelli"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+    
+
+    
+    <a href="https://github.com/surruskij"><i class="fa fa-github" aria-hidden="true"></i></a>
+    
+	
+	
+	
+	
+
+    
+    <a href="https://www.linkedin.com/in/danieleferla"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+    
+	
+	
+	
+	
+	
+	
+	
+	
+
+    
+
+    
+
+    
+    <a href="mailto:danieleferla1@gmail.com"><i class="fa fa-envelope" aria-hidden="true"></i></a>
+    
+
+  </div>
+  © 2018 Daniele Ferla. All rights reserved.
+</div>
+
+  </div>
+</body>
+</html>

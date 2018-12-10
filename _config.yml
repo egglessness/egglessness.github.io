@@ -1,0 +1,87 @@
+# # # # # # # # # # # # #
+#   K i k o - p l u s   #
+# # # # # # # # # # # # #
+
+# Basic
+name:               "surruskij"
+
+author:
+  twitter:          enea_fardelli
+  github:           surruskij
+  linkedin:         danieleferla
+  email:            danieleferla1@gmail.com
+
+copyright:
+  year:             2018
+  name:             Daniele Ferla
+
+# Google-analytics
+google-analytics:
+  id:               "UA-130789124-1"
+
+# Disqus
+disqus:
+  id:               "surruskij-blog"
+
+# URL
+url:                "https://surruskij.github.io" # the base hostname & protocol for your site
+# url:                "http://localhost:4000" # use this url when you develop
+baseurl:            "" # the subpath of your site, e.g. /blog
+
+
+# http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone:           Europe/Rome 
+permalink:          /:year/:title/
+
+# Pagination
+paginate:           5
+paginate_path:      /page:num/
+
+# Markdown
+markdown:           kramdown
+kramdown:
+  input:            GFM
+
+# Navigation
+nav:
+  - name:           "About"
+    url:            "/about"
+  - name:           "Archive"
+    url:            "/archive"
+  - name:           "Tags"
+    url:            "/tags"
+  - name:           "Github"
+    url:            "https://github.com/AWEEKJ/Kiko-plus"
+
+# Sass
+sass:
+  sass_dir:         _sass
+  style:            :compressed
+
+# Scopes
+defaults:
+  -
+    scope:
+      path:         ""
+      type:         "pages"
+    values:
+      layout:       "page"
+  -
+    scope:
+      path:         ""
+      type:         "posts"
+    values:
+      layout:       "post"
+  - scope:
+      path: "assets/img"
+    values:
+      image: true
+
+# jekyll-seo-tag, see: http://www.rubydoc.info/gems/jekyll-seo-tag/1.2.0
+plugins:
+  - jekyll-seo-tag
+  - jekyll-paginate
+  - jekyll-admin
+  - jekyll-postfiles
+
+exclude:            [vendor]

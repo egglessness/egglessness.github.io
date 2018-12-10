@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>surruskij</title>
+    <link>http://localhost:4000</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Abusing Facebook prefetching to leak users IP address and user agent</title>
+        <description>&lt;p&gt;In 2016 Facebook, aiming to improve final users experience, introduced &lt;strong&gt;link prefetching&lt;/strong&gt; as a way to reduce load time of external webpages. 
+As the &lt;a href=&quot;https://www.facebook.com/business/help/1514372351922333&quot;&gt;related Facebook help page&lt;/a&gt; states:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Prefetching allows Facebook to download mobile content before someone clicks a link. […] When someone clicks the link or call to action on your ad, a portion of the web page it’s linked to may already have been prefetched and will appear more quickly.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Essentially, when you share on Facebook a rich link (i.e. a link that features title, thumbnail and description), every time someone comes across to that post, &lt;strong&gt;without even clicking it&lt;/strong&gt;, his device loads the page and stores it for a certain amount of time: if the user decides to click on link, the page is already loaded.&lt;/p&gt;
+
+&lt;p&gt;Cool, right? User experience can benefit from this, and page load times are slightly faster.&lt;br /&gt;
+But, as always, cool features can be used by attackers to achieve completely different results.&lt;/p&gt;
+
+&lt;p&gt;Since every time the device prefetches a webpage it fires a &lt;code class=&quot;highlighter-rouge&quot;&gt;GET&lt;/code&gt; request to the server in which the page is located, I decided to do a simple experiment within my own local network.&lt;/p&gt;
+
+&lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt;, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a URL to my server:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;media/15392809752456/Screen%20Shot%202018-10-11%20at%2018.36.36.png&quot; alt=&quot;Screen Shot 2018-10-11 at 18.36.36-w526&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Referer: http://m.facebook.com
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
+(KHTML, like Gecko) Mobile/15G77 [FBAN/FBIOS;FBDV/iPhone7,1;FBMD/iPhone;FBSN/iOS;FBSV/11.4.1;\
+FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
+Connection: keep-alive
+X-Purpose: preview
+Host: 192.168.0.24
+X-Fb-Http-Engine: Liger
+X-Fb-Connection-Type: wifi
+Accept-Encoding: gzip, deflate
+
+
+192.168.0.23 - - [11/Oct/2018 18:41:02] &quot;GET / HTTP/1.1&quot; 200 -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can figure out that this request was fired for prefetching purposes by looking at these specific fields:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;X-Purpose: preview
+X-Fb-Http-Engine: Liger
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There are plenty of useful information about our target:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Device model&lt;/li&gt;
+  &lt;li&gt;iOS version&lt;/li&gt;
+  &lt;li&gt;Carrier operator (FBCR)&lt;/li&gt;
+  &lt;li&gt;Device locale&lt;/li&gt;
+  &lt;li&gt;IP address (and so very coarse location information if the target isn’t using proxies/VPNs)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Obviously, this works also outside the local network: I just set up a simple IP logger service (like &lt;a href=&quot;https://grabify.link/&quot;&gt;Grabify&lt;/a&gt;) to generate a URL that can stealthy log request headers and redirect the user to wanted location.&lt;br /&gt;
+The result? I was able to collect the same aforementioned data with no effort.&lt;/p&gt;
+
+&lt;h3 id=&quot;affected-users&quot;&gt;Affected users&lt;/h3&gt;
+&lt;p&gt;At the time of the discovery, only iOS users having the build &lt;code class=&quot;highlighter-rouge&quot;&gt;192.0.0.61.85&lt;/code&gt; installed were affected.&lt;/p&gt;
+
+&lt;p&gt;I tried to repeat the same steps using an Android device, but it seemed that this was gonna work only on iOS.&lt;/p&gt;
+
+&lt;h3 id=&quot;unaware-attackers&quot;&gt;Unaware attackers&lt;/h3&gt;
+&lt;p&gt;When it comes to describe a security/privacy vulnerability, it’s always obvious to say that users are unaware; however, since link prefetching is a feature enabled by default, potentially every person that shared rich links was an unaware attacker, having the possibility to spy on users behaviour, using his own profile, a group or a page as attack vector.
+Moreover by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.&lt;/p&gt;
+
+&lt;p&gt;One can argue: “IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back”.&lt;br /&gt;
+The fact is that, in this particular situation, &lt;strong&gt;people were not aware of this behaviour&lt;/strong&gt;, because:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;the only reference given by Facebook can be found in the help section for businesses&lt;/li&gt;
+  &lt;li&gt;even if a user read that passage, there aren’t any details on the particularly abundant amount of data that is sent just for the sake of previewing.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I just want to stress more on the second point.
+An &lt;a href=&quot;https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-agent&quot;&gt;experiment&lt;/a&gt; carried by the EFF (Electronic Frontier Foundation) in 2010 showed that:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Browsers usually convey between 5 and 15 bits of identifying information, about 10.5 bits on average. 
+10 bits of identifying information would allow you to be picked out of a crowd of 2^10 , or 1024 people.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The fun fact is that in this experiment analysed user agents were like:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.195.27 Safari/532.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;which is nothing compared with the huge amount of data carried by the FB in-app browser:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
+(KHTML, like Gecko) Mobile/15G77 [FBAN/FBIOS;FBDV/iPhone7,1;FBMD/iPhone;FBSN/iOS;FBSV/11.4.1;\
+FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For this reason, even if I didn’t run any actual experiment, I believe that the number of bits of entropy on the latter kind of user agent can be far higher, thus leading to an unique identification within an even larger crowd of people.&lt;/p&gt;
+
+&lt;h3 id=&quot;timetable&quot;&gt;Timetable&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;11 October 2018: vulnerability found and reported to Facebook&lt;/li&gt;
+  &lt;li&gt;22 October 2018: investigation started by the appropriate product team&lt;/li&gt;
+  &lt;li&gt;5 November 2018 (ish): prefetching appears to be disabled, thus closing the vulnerability&lt;/li&gt;
+  &lt;li&gt;4 December 2018: official notification by the security team, saying that everything was patched&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 04 Dec 2018 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/2018/abusing-facebook-prefetching/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/abusing-facebook-prefetching/</guid>
+      </item>
+    
+      <item>
+        <title>Testing MachineFunctionPasses on LLVM without having to recompile every time</title>
+        <description>&lt;p&gt;LLVM is an extremely beautiful project: its modularity enables anyone to extend the compiler infrastructure by writing modules to be used either on the backend or the frontend.&lt;/p&gt;
+
+&lt;p&gt;When it comes to extend the backend, however, LLVM gives us the possibility to choose the abstraction layer we want to work on: on one hand we can write passes that operate at the IR (Intermediate Representation) level, on the other we can go even deeper, writing a &lt;code class=&quot;highlighter-rouge&quot;&gt;MachineFunctionPass&lt;/code&gt; to directly work at the assembly level of our target architecture.&lt;/p&gt;
+
+&lt;p&gt;While it is possible to develop normal passes outside the LLVM source tree, and dynamically load them using the &lt;code class=&quot;highlighter-rouge&quot;&gt;opt&lt;/code&gt; tool, if we have to work on &lt;code class=&quot;highlighter-rouge&quot;&gt;MachineFunctionPasses&lt;/code&gt; we have to recompile the whole backend each time we made a tiny modification to the pass code. &lt;br /&gt;
+This is due to the fact that our &lt;code class=&quot;highlighter-rouge&quot;&gt;MachineFunctionPass&lt;/code&gt; is used only in the late stages of machine code generation, on MIR code (Machine IR, much more lower level); for this reason those passes are tightly coupled with the LLVM backend.&lt;/p&gt;
+
+&lt;p&gt;Since recompiling everything each time is unfeasible (it would take hours), I’ll show you a way to selectively recompile only parts of the backend, getting things done in seconds!&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;compiling-llvm&quot;&gt;Compiling LLVM&lt;/h3&gt;
+&lt;p&gt;We will start from scratch: we will setup a faster and smarter build system (&lt;code class=&quot;highlighter-rouge&quot;&gt;ninja-build&lt;/code&gt;), compile everything and once we have done with this, we won’t have to wait hours anymore.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Install&lt;/strong&gt; all the &lt;strong&gt;prerequisites&lt;/strong&gt;:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ sudo apt install xz-utils cmake ninja-build clang
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Download&lt;/strong&gt; LLVM 7.0 &lt;strong&gt;sources&lt;/strong&gt; from &lt;a href=&quot;http://releases.llvm.org/7.0.0/llvm-7.0.0.src.tar.xz&quot;&gt;here&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Unpack&lt;/strong&gt; them in a directory of your choice which will refer to as &lt;code class=&quot;highlighter-rouge&quot;&gt;[LLVM_SRC]&lt;/code&gt;. I personally created a new directory outside the source folder.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Create a &lt;strong&gt;build directory&lt;/strong&gt;:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ mkdir llvm-build
+ $ cd llvm-build
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Let’s &lt;strong&gt;configure&lt;/strong&gt; the build environment, instructing &lt;code class=&quot;highlighter-rouge&quot;&gt;cmake&lt;/code&gt; as follows:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_TARGETS_TO_BUILD=X86 -DBUILD_SHARED_LIBS=ON \
+   ../llvm-7.0.0.src -GNinja
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;As you can see, there are a couple of flags that are worth to be mentioned:&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-DCMAKE_BUILD_TYPE=Debug&lt;/code&gt;: just to obtain a debug build (more flexible)&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-DLLVM_TARGETS_TO_BUILD=X86&lt;/code&gt;: since we’re interested only in the X86 platform, we don’t want to lose time compiling the backend also for all the other platforms, such as ARM, MIPS, SPARC, etc. This speeds up the compilation process, and make us save up to 4 GB of disk space.&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-DBUILD_SHARED_LIBS=ON&lt;/code&gt;: shared code is moved in &lt;code class=&quot;highlighter-rouge&quot;&gt;.so&lt;/code&gt; libraries, that can be linked at runtime, thus speeding up the compilation process even more.&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;-GNinja&lt;/code&gt;: specifies to use &lt;code class=&quot;highlighter-rouge&quot;&gt;ninja&lt;/code&gt; as build generator. By using &lt;code class=&quot;highlighter-rouge&quot;&gt;ninja&lt;/code&gt; the overall compile time can decrease by more than 50% (it seems that it has better support to multithreading), but most importantly we can invoke a specific command to compile only &lt;code class=&quot;highlighter-rouge&quot;&gt;llc&lt;/code&gt;.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Now start the actual &lt;strong&gt;compilation&lt;/strong&gt; within your build directory&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ cmake --build .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Building takes some time to finish.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Finally, we can create a symbolic link to our custom version of &lt;code class=&quot;highlighter-rouge&quot;&gt;llc&lt;/code&gt;, in order to call it in a simpler way:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ sudo ln -s [BUILD-PATH]/bin/llc /usr/local/bin/llc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;recompiling-llc&quot;&gt;Recompiling LLC&lt;/h4&gt;
+&lt;p&gt;At this stage, every time we modify our &lt;code class=&quot;highlighter-rouge&quot;&gt;MachineFunctionPass&lt;/code&gt;, we just have to tell &lt;code class=&quot;highlighter-rouge&quot;&gt;ninja-build&lt;/code&gt; to recompile only &lt;code class=&quot;highlighter-rouge&quot;&gt;llc&lt;/code&gt; (LLVM system compiler), without having to recompile the whole backend.&lt;/p&gt;
+
+&lt;p&gt;This is just a matter of seconds by running:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ninja llc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;running-experiments&quot;&gt;Running experiments&lt;/h3&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;llc&lt;/code&gt; works at the IR level, so we have to generate the &lt;code class=&quot;highlighter-rouge&quot;&gt;.ll&lt;/code&gt; file out of our C program:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;clang -O0 -S -emit-llvm hello.c -o hello.ll
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;then we have to run only the code generation use &lt;code class=&quot;highlighter-rouge&quot;&gt;llc&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;llc hello.ll
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The output is an &lt;code class=&quot;highlighter-rouge&quot;&gt;asm&lt;/code&gt; file, that can be compiled simply with &lt;code class=&quot;highlighter-rouge&quot;&gt;gcc&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gcc hello.s -o hello
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;That’s it!&lt;/p&gt;
+
+&lt;p&gt;I hope this will speed up your development as it did with me! ;)&lt;/p&gt;
+</description>
+        <pubDate>Wed, 17 Oct 2018 00:00:00 +0200</pubDate>
+        <link>http://localhost:4000/2018/llvm-machinefunctionpasses/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/llvm-machinefunctionpasses/</guid>
+      </item>
+    
+  </channel>
+</rss>
