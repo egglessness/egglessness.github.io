@@ -31,7 +31,7 @@ body {
 }
 
 #logo-big {
-    width: 13rem;
+    width: 11.5rem;
 }
 
 /*--------------
@@ -97,9 +97,10 @@ body {
     &-title {
         margin-top: 0;
         margin-bottom: 2rem;
-        font-size: 2.25em;
+        font-size: 2em;
         line-height: 1.2em;
         font-weight: 600;
+        word-break: break-word;
     }
 }
 
@@ -111,9 +112,10 @@ body {
     &-title {
         margin-top: 0rem;
         margin-bottom: 0.3rem;
-        font-size: 2.25em;
+        font-size: 2em;
         line-height: 1.2em;
         font-weight: 600;
+        word-break: break-word;
     }
     &-date {
         margin-bottom: .5rem;
