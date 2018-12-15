@@ -19,11 +19,9 @@ But, as always, cool features can be used by attackers to achieve completely dif
 
 Since every time the device prefetches a webpage it fires a `GET` request to the server in which the page is located, I decided to do a simple experiment within my own local network.
 
-I set up a simple server using `Flask`, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a URL to my server:
+I set up a simple server using `Flask`, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.
 
-![Screen Shot 2018-10-11 at 18.36.36-w526](media/15392809752456/Screen%20Shot%202018-10-11%20at%2018.36.36.png)
-
-I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:
+Then, I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:
 
 ```
 Referer: http://m.facebook.com
