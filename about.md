@@ -16,4 +16,4 @@ In short, I'm that kind of person which always has something running through his
 
 
 -------
-If you want to tell me something or just send a funny meme, feel free to drop me a line at this address:
+If you want to tell me something or just send a funny meme, feel free to drop me a line to this (address)[mailto:{{ site.email | encode_email }}]:
