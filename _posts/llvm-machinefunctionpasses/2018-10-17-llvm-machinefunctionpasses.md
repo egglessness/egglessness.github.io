@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Testing MachineFunctionPasses on LLVM without having to recompile every time"
+title: "Testing a MachineFunctionPass on LLVM without having to recompile every time"
 description: "Recompiling the whole LLVM infrastructure is a very tedious and long process. I'll show you how to get away with it in just a few seconds."
 date: 2018-10-17
 tags: [llvm, tutorial]
