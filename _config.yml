@@ -4,12 +4,13 @@
 
 # Basic
 name:               "surruskij"
+email:              surruskij@gmail.com
 
 author:
   twitter:          enea_fardelli
   github:           surruskij
   linkedin:         danieleferla
-  email:            surruskij@gmail.com
+ 
 
 copyright:
   year:             2018
