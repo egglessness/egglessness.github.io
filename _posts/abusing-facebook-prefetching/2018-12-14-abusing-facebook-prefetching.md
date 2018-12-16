@@ -67,7 +67,7 @@ In this peculiar scenario, however, attackers were unaware too (at least most of
 Moreover, by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.
 
 One can argue: "IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back".  
-The fact is that, in this particular situation, **people were not aware of this behaviour**, because:
+The fact is that, in this particular situation, **people didn't know anything about this behaviour**, because:
 
 - the only reference given by Facebook can be found in the help section for businesses
 - even if a user read that passage, there aren't any details on the particularly abundant amount of data that is sent just for the sake of previewing.
