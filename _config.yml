@@ -83,5 +83,6 @@ plugins:
   - jekyll-admin
   - jekyll-postfiles
   - jekyll-sitemap
+  - jekyll-target-blank
 
 exclude:            [vendor]

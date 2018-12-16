@@ -9,7 +9,7 @@ share: true
 ---
 
 In 2016 Facebook, aiming to improve final users experience, introduced **link prefetching** as a way to reduce load time of external webpages. 
-As the [related Facebook help page](https://www.facebook.com/business/help/1514372351922333){:target="_blank"} states:
+As the [related Facebook help page](https://www.facebook.com/business/help/1514372351922333) states:
 > Prefetching allows Facebook to download mobile content before someone clicks a link. [...] When someone clicks the link or call to action on your ad, a portion of the web page it's linked to may already have been prefetched and will appear more quickly.
 
 Essentially, when you share on Facebook a rich link (i.e. a link that features title, thumbnail and description), every time someone comes across to that post, **without even clicking it**, his device loads the page and stores it for a certain amount of time: if the user decides to click on link, the page is already loaded.
@@ -53,7 +53,7 @@ There are plenty of useful information about our target:
 - Device locale
 - IP address (so very coarse location information if the target isn't using proxies/VPNs)
 
-Obviously, this works also outside the local network: a simple IP logger service (like [Grabify](https://grabify.link/)){:target="_blank"} was enough to generate a URL that can stealthy log request headers and redirect the user wherever I want.  
+Obviously, this works also outside the local network: a simple IP logger service (like [Grabify](https://grabify.link/)) was enough to generate a URL that can stealthy log request headers and redirect the user wherever I want.  
 The result? I was able to collect the same data with no effort.
 
 ### Affected users
@@ -73,7 +73,7 @@ The fact is that, in this particular situation, **people didn't know anything ab
 - even if a user read that passage, there aren't any details on the particularly abundant amount of data that is sent just for the sake of previewing.
 
 I just want to stress more on the second point.
-An [experiment](https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-agent){:target="_blank"} carried by the EFF (Electronic Frontier Foundation) in 2010 showed that:
+An [experiment](https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-agent) carried by the EFF (Electronic Frontier Foundation) in 2010 showed that:
 > Browsers usually convey between 5 and 15 bits of identifying information, about 10.5 bits on average. 
 > 10 bits of identifying information would allow you to be picked out of a crowd of 2^10 , or 1024 people. 
 
