@@ -20,11 +20,9 @@ But, as always, cool features can be used by attackers to achieve completely dif
 
 &lt;p&gt;Since every time the device prefetches a webpage it fires a &lt;code class=&quot;highlighter-rouge&quot;&gt;GET&lt;/code&gt; request to the server in which the page is located, I decided to do a simple experiment within my own local network.&lt;/p&gt;
 
-&lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt;, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a URL to my server:&lt;/p&gt;
+&lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt;, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;media/15392809752456/Screen%20Shot%202018-10-11%20at%2018.36.36.png&quot; alt=&quot;Screen Shot 2018-10-11 at 18.36.36-w526&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
+&lt;p&gt;Then, I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Referer: http://m.facebook.com
 User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
