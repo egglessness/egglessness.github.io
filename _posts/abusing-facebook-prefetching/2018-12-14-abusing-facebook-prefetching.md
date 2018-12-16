@@ -2,7 +2,7 @@
 layout: post
 title: "Abusing Facebook prefetching to leak users IP address and user agent"
 description: "Could ever a magical feature that improves the user experience by reducing load time be exploited to get some useful data on a targeted user? C'mon it's 2018, obviously yes!"
-date: 2018-12-04
+date: 2018-12-14
 tags: [responsible disclosure, facebook, feature abuse]
 comments: true
 share: true
@@ -21,7 +21,7 @@ Since every time the device prefetches a webpage it fires a `GET` request to the
 
 I set up a simple server using `Flask`, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.
 
-Then, I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:
+Then, I logged in using a secondary Facebook account on my iPhone and,ì as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:
 
 ```
 Referer: http://m.facebook.com
@@ -51,19 +51,20 @@ There are plenty of useful information about our target:
 - iOS version
 - Carrier operator (FBCR)
 - Device locale
-- IP address (and so very coarse location information if the target isn't using proxies/VPNs)
+- IP address (so very coarse location information if the target isn't using proxies/VPNs)
 
-Obviously, this works also outside the local network: I just set up a simple IP logger service (like [Grabify](https://grabify.link/)) to generate a URL that can stealthy log request headers and redirect the user to wanted location.  
-The result? I was able to collect the same aforementioned data with no effort.
+Obviously, this works also outside the local network: a simple IP logger service (like [Grabify](https://grabify.link/)) was enough to generate a URL that can stealthy log request headers and redirect the user wherever I want.  
+The result? I was able to collect the same data with no effort.
 
 ### Affected users
 At the time of the discovery, only iOS users having the build `192.0.0.61.85` installed were affected. 
 
-I tried to repeat the same steps using an Android device, but it seemed that this was gonna work only on iOS.
+I tried to repeat the same steps using an Android device, but without success (prefetching appears to be disabled at all).
 
-### Unaware attackers
-When it comes to describe a security/privacy vulnerability, it's always obvious to say that users are unaware; however, since link prefetching is a feature enabled by default, potentially every person that shared rich links was an unaware attacker, having the possibility to spy on users behaviour, using his own profile, a group or a page as attack vector.
-Moreover by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.
+### Unaware users, unaware attackers
+When it comes to describe a security/privacy vulnerability, it's always obvious to say that users are unaware of it.  
+In this peculiar scenario, however, attackers were unaware too (at least most of them). This is due to the fact that link prefetching was a feature enabled by default, hence potentially every person that shared rich links had the possibility to spy on users behaviour, using a profile, a group or a page as attack vector.
+Moreover, by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.
 
 One can argue: "IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back".  
 The fact is that, in this particular situation, **people were not aware of this behaviour**, because:
@@ -97,4 +98,4 @@ For this reason, even if I didn't run any actual experiment, I believe that the 
 - 11 October 2018: vulnerability found and reported to Facebook
 - 22 October 2018: investigation started by the appropriate product team
 - 5 November 2018 (ish): prefetching appears to be disabled, thus closing the vulnerability 
-- 4 December 2018: official notification by the security team, saying that everything was patched
+- 14 December 2018: official notification by the security team, saying that everything was patched
