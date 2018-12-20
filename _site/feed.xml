@@ -22,7 +22,7 @@ But, as always, cool features can be used by attackers to achieve completely dif
 
 &lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt;, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.&lt;/p&gt;
 
-&lt;p&gt;Then, I logged in using a secondary Facebook account on my iPhone, and as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
+&lt;p&gt;Then, I logged in using a secondary Facebook account on my iPhone and,ì as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Referer: http://m.facebook.com
 User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/605.1.15 \
@@ -51,23 +51,24 @@ X-Fb-Http-Engine: Liger
   &lt;li&gt;iOS version&lt;/li&gt;
   &lt;li&gt;Carrier operator (FBCR)&lt;/li&gt;
   &lt;li&gt;Device locale&lt;/li&gt;
-  &lt;li&gt;IP address (and so very coarse location information if the target isn’t using proxies/VPNs)&lt;/li&gt;
+  &lt;li&gt;IP address (so very coarse location information if the target isn’t using proxies/VPNs)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Obviously, this works also outside the local network: I just set up a simple IP logger service (like &lt;a href=&quot;https://grabify.link/&quot;&gt;Grabify&lt;/a&gt;) to generate a URL that can stealthy log request headers and redirect the user to wanted location.&lt;br /&gt;
-The result? I was able to collect the same aforementioned data with no effort.&lt;/p&gt;
+&lt;p&gt;Obviously, this works also outside the local network: a simple IP logger service (like &lt;a href=&quot;https://grabify.link/&quot;&gt;Grabify&lt;/a&gt;) was enough to generate a URL that can stealthy log request headers and redirect the user wherever I want.&lt;br /&gt;
+The result? I was able to collect the same data with no effort.&lt;/p&gt;
 
 &lt;h3 id=&quot;affected-users&quot;&gt;Affected users&lt;/h3&gt;
 &lt;p&gt;At the time of the discovery, only iOS users having the build &lt;code class=&quot;highlighter-rouge&quot;&gt;192.0.0.61.85&lt;/code&gt; installed were affected.&lt;/p&gt;
 
-&lt;p&gt;I tried to repeat the same steps using an Android device, but it seemed that this was gonna work only on iOS.&lt;/p&gt;
+&lt;p&gt;I tried to repeat the same steps using an Android device, but without success (prefetching appears to be disabled at all).&lt;/p&gt;
 
-&lt;h3 id=&quot;unaware-attackers&quot;&gt;Unaware attackers&lt;/h3&gt;
-&lt;p&gt;When it comes to describe a security/privacy vulnerability, it’s always obvious to say that users are unaware; however, since link prefetching is a feature enabled by default, potentially every person that shared rich links was an unaware attacker, having the possibility to spy on users behaviour, using his own profile, a group or a page as attack vector.
-Moreover by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.&lt;/p&gt;
+&lt;h3 id=&quot;unaware-users-unaware-attackers&quot;&gt;Unaware users, unaware attackers&lt;/h3&gt;
+&lt;p&gt;When it comes to describe a security/privacy vulnerability, it’s always obvious to say that users are unaware of it.&lt;br /&gt;
+In this peculiar scenario, however, attackers were unaware too (at least most of them). This is due to the fact that link prefetching was a feature enabled by default, hence potentially every person that shared rich links had the possibility to spy on users behaviour, using a profile, a group or a page as attack vector.
+Moreover, by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.&lt;/p&gt;
 
 &lt;p&gt;One can argue: “IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back”.&lt;br /&gt;
-The fact is that, in this particular situation, &lt;strong&gt;people were not aware of this behaviour&lt;/strong&gt;, because:&lt;/p&gt;
+The fact is that, in this particular situation, &lt;strong&gt;people didn’t know anything about this behaviour&lt;/strong&gt;, because:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;the only reference given by Facebook can be found in the help section for businesses&lt;/li&gt;
@@ -100,16 +101,16 @@ FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
   &lt;li&gt;11 October 2018: vulnerability found and reported to Facebook&lt;/li&gt;
   &lt;li&gt;22 October 2018: investigation started by the appropriate product team&lt;/li&gt;
   &lt;li&gt;5 November 2018 (ish): prefetching appears to be disabled, thus closing the vulnerability&lt;/li&gt;
-  &lt;li&gt;4 December 2018: official notification by the security team, saying that everything was patched&lt;/li&gt;
+  &lt;li&gt;14 December 2018: official notification by the security team, saying that everything was patched&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-        <pubDate>Tue, 04 Dec 2018 00:00:00 +0100</pubDate>
+        <pubDate>Fri, 14 Dec 2018 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/2018/abusing-facebook-prefetching/</link>
         <guid isPermaLink="true">http://localhost:4000/2018/abusing-facebook-prefetching/</guid>
       </item>
     
       <item>
-        <title>Testing MachineFunctionPasses on LLVM without having to recompile every time</title>
+        <title>Testing a MachineFunctionPass on LLVM without having to recompile every time</title>
         <description>&lt;p&gt;LLVM is an extremely beautiful project: its modularity enables anyone to extend the compiler infrastructure by writing modules to be used either on the backend or the frontend.&lt;/p&gt;
 
 &lt;p&gt;When it comes to extend the backend, however, LLVM gives us the possibility to choose the abstraction layer we want to work on: on one hand we can write passes that operate at the IR (Intermediate Representation) level, on the other we can go even deeper, writing a &lt;code class=&quot;highlighter-rouge&quot;&gt;MachineFunctionPass&lt;/code&gt; to directly work at the assembly level of our target architecture.&lt;/p&gt;

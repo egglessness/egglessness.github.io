@@ -3,21 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Testing MachineFunctionPasses on LLVM without having to recompile every time</title>
+  <title>Testing a MachineFunctionPass on LLVM without having to recompile every time</title>
+ 
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/assets/favicons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicons/favicon-96x96.png">
+  <link rel="manifest" href="/assets/favicons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/assets/favicons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#5881bf">
 
   <!-- CSS -->
   <link rel="stylesheet" href="/assets/css/main.css" type="text/css">
 
   <!-- Font -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link href='//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css' rel='stylesheet' type='text/css'>
-  <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css?family=Merriweather|Ubuntu+Mono|Lato" rel="stylesheet">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/brands.css" integrity="sha384-whKHCkwP9f4MyD1vda26+XRyEg2zkyZezur14Kxc784RxUU1E7HvWVYj9EoJnUV7" crossorigin="anonymous">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/fontawesome.css" integrity="sha384-WK8BzK0mpgOdhCxq86nInFqSWLzR5UAsNg0MGX9aDaIIrFWQ38dGdhwnNCAoXFxL" crossorigin="anonymous">
   <link rel="alternate" type="application/rss+xml" title="RSS Feed for surruskij" href="/feed.xml" />
   <!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>Testing MachineFunctionPasses on LLVM without having to recompile every time | surruskij</title>
+<title>Testing a MachineFunctionPass on LLVM without having to recompile every time | surruskij</title>
 <meta name="generator" content="Jekyll v3.8.5" />
-<meta property="og:title" content="Testing MachineFunctionPasses on LLVM without having to recompile every time" />
+<meta property="og:title" content="Testing a MachineFunctionPass on LLVM without having to recompile every time" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Recompiling the whole LLVM infrastructure is a very tedious and long process. I’ll show you how to get away with it in just a few seconds." />
 <meta property="og:description" content="Recompiling the whole LLVM infrastructure is a very tedious and long process. I’ll show you how to get away with it in just a few seconds." />
@@ -27,7 +34,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2018-10-17T00:00:00+02:00" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/2018/llvm-machinefunctionpasses/","headline":"Testing MachineFunctionPasses on LLVM without having to recompile every time","dateModified":"2018-10-17T00:00:00+02:00","datePublished":"2018-10-17T00:00:00+02:00","description":"Recompiling the whole LLVM infrastructure is a very tedious and long process. I’ll show you how to get away with it in just a few seconds.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2018/llvm-machinefunctionpasses/"},"@type":"BlogPosting","@context":"http://schema.org"}</script>
+{"url":"http://localhost:4000/2018/llvm-machinefunctionpasses/","description":"Recompiling the whole LLVM infrastructure is a very tedious and long process. I’ll show you how to get away with it in just a few seconds.","headline":"Testing a MachineFunctionPass on LLVM without having to recompile every time","dateModified":"2018-10-17T00:00:00+02:00","datePublished":"2018-10-17T00:00:00+02:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2018/llvm-machinefunctionpasses/"},"@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -51,13 +58,14 @@
 
 <body>
   <div class="content-container">
-    <header>
+    <base target="_blank">
+<header>
   <div class="header-small">
-    <a href="http://localhost:4000"><img id="logo" src="http://localhost:4000/assets/images/logo.png"></a>
+    <a href="http://localhost:4000" target="_self"><img id="logo" src="http://localhost:4000/assets/images/logo.png"></a>
   </div>
 </header>
 <div class="post">
-  <div class="post-title">Testing MachineFunctionPasses on LLVM without having to recompile every time</div>
+  <div class="post-title">Testing a MachineFunctionPass on LLVM without having to recompile every time</div>
   <span class="post-date">
     <time>17 Oct 2018</time>
   </span>
@@ -65,14 +73,14 @@
     <ul>
       
       <li>
-        <a href="http://localhost:4000/tags#llvm">
+        <a href="http://localhost:4000/tags#llvm" target="_self">
           <span>llvm</span>
         </a>
       </li>
       
       
       <li>
-        <a href="http://localhost:4000/tags#tutorial">
+        <a href="http://localhost:4000/tags#tutorial" target="_self">
           <span>tutorial</span>
         </a>
       </li>
@@ -203,7 +211,7 @@ s.setAttribute('data-timestamp', +new Date());
 </div>
 
 
-    <!-- Documents about icons are here: http://fontawesome.io/icons/ -->
+    
 <div class="footer">
   <hr />
   <div class="footer-link">
@@ -214,35 +222,33 @@ s.setAttribute('data-timestamp', +new Date());
 	
 
     
-    <a href="https://twitter.com/enea_fardelli"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+    <a href="https://twitter.com/surruskij" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i></a>
     
 
     
-    <a href="https://github.com/surruskij"><i class="fa fa-github" aria-hidden="true"></i></a>
+    <a href="https://github.com/surruskij" target="_blank"><i class="fab fa-github" aria-hidden="true"></i></a>
     
-	
-	
-	
-	
-
-    
-    <a href="https://www.linkedin.com/in/danieleferla"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
-    
-	
-	
-	
-	
 	
 	
 	
 	
 
     
+    <a href="https://www.linkedin.com/in/danieleferla" target="_blank"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+    
+	
+	
+	
+	
+	
+	
+	
+	
 
     
 
     
-    <a href="mailto:danieleferla1@gmail.com"><i class="fa fa-envelope" aria-hidden="true"></i></a>
+
     
 
   </div>

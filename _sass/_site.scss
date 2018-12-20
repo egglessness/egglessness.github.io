@@ -95,6 +95,7 @@ body {
 
 .page {
     &-title {
+        font-family: $title-font;
         margin-top: 0;
         margin-bottom: 2rem;
         font-size: 2em;
@@ -110,6 +111,7 @@ body {
 
 .post {
     &-title {
+        font-family: $title-font;
         margin-top: 0rem;
         margin-bottom: 0.3rem;
         font-size: 2em;
@@ -186,8 +188,9 @@ body {
             }
         }
         &-title {
+            font-family: $title-font;
             margin-bottom: .3rem;
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: 600;
             word-break: break-word;
         }
@@ -272,6 +275,7 @@ body {
         }
     }
     &-title {
+        font-family: $title-font;
         font-size: 1.4rem;
         font-weight: 600;
         text-transform: lowercase;
@@ -314,6 +318,7 @@ body {
                 }
             }
             &-title {
+                font-family: $title-font;
                 font-size: 1.2rem;
                 font-weight: 400;
             }
