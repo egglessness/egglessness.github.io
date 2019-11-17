@@ -82,4 +82,4 @@ plugins:
   - jekyll-postfiles
   - jekyll-sitemap
 
-exclude:            [vendor]
+exclude:            [vendor, Rakefile, logo.sketch]
