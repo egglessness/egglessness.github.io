@@ -18,16 +18,17 @@ body {
 
 .content-container {
     max-width: 48rem;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
     margin-left: auto;
     margin-right: auto;
+
     @media (max-width: 48rem) {
         padding: 2rem 1.3rem;
     }
 }
 
 #logo {
-    width: 10rem;
+    width: 9rem;
 }
 
 #logo-big {
@@ -38,26 +39,39 @@ body {
   Header
   -------------- */
 
+header {
+    padding: 2% 2%;
+}
+
 .header {
-    padding: 2%;
+    padding: 0% 2%;
     margin-bottom: 1.5em;
+
     &-title {
         margin: 0.3em 0;
         font-size: 2.25em;
         line-height: 1.2em;
         font-weight: 600;
+        float: left;
+
         a {
             color: $base-color;
+
             &:hover,
             &:focus {
                 text-decoration: none;
             }
         }
+
         span {
             color: $oc-gray-5;
         }
     }
+
     &-nav {
+        float: right;
+        padding-top: 1rem;
+
         a {
             color: $oc-gray-7;
             text-transform: lowercase;
@@ -65,6 +79,7 @@ body {
             -moz-transition: all .2s ease;
             transition: all .2s ease;
             margin-right: .3rem;
+
             &:hover,
             &:focus {
                 color: $oc-gray-7;
@@ -80,8 +95,11 @@ body {
     font-size: .75rem;
     font-weight: 600;
     text-transform: uppercase;
+    float: left;
+
     a {
         color: $base-color;
+
         &:hover,
         &:focus {
             text-decoration: none;
@@ -94,11 +112,13 @@ body {
   -------------- */
 
 .page {
+    margin-top: 5rem;
+
     &-title {
         font-family: $title-font;
         margin-top: 0;
         margin-bottom: 2rem;
-        font-size: 2em;
+        font-size: 1.5em;
         line-height: 1.2em;
         font-weight: 600;
         word-break: break-word;
@@ -110,27 +130,33 @@ body {
   -------------- */
 
 .post {
+    padding: 0% 2%;
+
     &-title {
         font-family: $title-font;
         margin-top: 0rem;
         margin-bottom: 0.3rem;
-        font-size: 2em;
+        font-size: 1.8em;
         line-height: 1.2em;
         font-weight: 600;
         word-break: break-word;
     }
+
     &-date {
         margin-bottom: .5rem;
         color: $oc-gray-8;
         font-size: .75rem;
         text-transform: uppercase;
     }
+
     &-tag {
         margin-bottom: 1.5rem;
+
         ul {
             li:before {
                 content: ""
             }
+
             li {
                 margin: 0;
                 font-size: .75rem;
@@ -138,6 +164,7 @@ body {
                 display: inline;
                 list-style-type: none;
                 text-transform: lowercase;
+
                 a {
                     display: inline-block;
                     margin: 4px;
@@ -146,23 +173,28 @@ body {
                     background-color: #5881bf;
                     text-decoration: none;
                     border-radius: 3px;
+
                     span {
                         float: left;
                         padding: .5px 5px;
                     }
                 }
+
                 a:hover {
                     background-color: #3b5782;
                 }
+
                 a:visited {
                     background-color: #30476b;
                 }
+
                 a:visited:hover {
                     background-color: $oc-gray-7;
                 }
             }
         }
     }
+
     &-disqus {
         margin-top: 4rem;
     }
@@ -174,19 +206,23 @@ body {
 
 .list {
     &-post {
-        padding: 4% 2%;
+        padding: 2% 2%;
+
         &:hover {
             background-color: $background-over-color;
             border-color: transparent;
             border-radius: 10px;
         }
+
         a {
             color: $base-color;
+
             &:hover,
             &:focus {
                 text-decoration: none;
             }
         }
+
         &-title {
             font-family: $title-font;
             margin-bottom: .3rem;
@@ -194,26 +230,32 @@ body {
             font-weight: 600;
             word-break: break-word;
         }
+
         &-date {
             color: $base-lighten-color;
             font-size: .8rem;
             text-transform: uppercase;
         }
+
         &-desc {
             color: $base-color;
             margin-bottom: .25rem;
             font-size: 1rem;
         }
     }
+
     &-pagination {
         margin-top: 4rem;
         padding-top: 2rem;
         padding-bottom: 2rem; // text-transform: lowercase;
+
         &-previous {
             float: left;
             padding-left: 2%;
+
             a {
                 color: $oc-gray-6;
+
                 &:hover,
                 &:focus {
                     color: $oc-gray-7;
@@ -221,11 +263,14 @@ body {
                 }
             }
         }
+
         &-next {
             float: right;
             padding-right: 2%;
+
             a {
                 color: $oc-gray-6;
+
                 &:hover {
                     color: $oc-gray-7;
                     text-decoration: none;
@@ -245,12 +290,14 @@ body {
             li:before {
                 content: ""
             }
+
             li {
                 margin: 0;
                 font-size: 0.8rem;
                 display: inline;
                 list-style-type: none;
                 text-transform: lowercase;
+
                 a {
                     display: inline-block;
                     margin: 4px;
@@ -259,21 +306,25 @@ body {
                     background-color: $oc-gray-6;
                     text-decoration: none;
                     border-radius: 3px;
+
                     span {
                         float: left;
                         padding: .5px 5px;
                     }
+
                     .count {
                         background-color: $oc-gray-7;
                         border-radius: 0 3px 3px 0;
                     }
                 }
+
                 a:hover {
                     background-color: $oc-gray-7;
                 }
             }
         }
     }
+
     &-title {
         font-family: $title-font;
         font-size: 1.4rem;
@@ -281,14 +332,17 @@ body {
         text-transform: lowercase;
         padding: 1rem 0;
     }
+
     &-post {
         a {
             color: $base-color;
+
             &:hover,
             &:focus {
                 text-decoration: none;
             }
         }
+
         &:hover {
             color: $base-color;
             text-decoration: none;
@@ -306,22 +360,27 @@ body {
     &-list {
         &-post {
             padding: 0.1rem;
+
             &:hover {
                 background-color: $background-over-color;
                 border-color: transparent;
             }
+
             a {
                 color: $base-color;
+
                 &:hover,
                 &:focus {
                     text-decoration: none;
                 }
             }
+
             &-title {
                 font-family: $title-font;
                 font-size: 1.2rem;
                 font-weight: 400;
             }
+
             &-date {
                 color: $base-lighten-color;
                 font-size: .75rem;
@@ -338,8 +397,10 @@ body {
 .footer {
     text-align: center;
     font-size: .75rem;
+
     &-link {
         margin: .2rem;
+
         a {
             color: $base-color;
             margin: 4px;

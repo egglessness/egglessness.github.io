@@ -3,7 +3,7 @@
 # # # # # # # # # # # # #
 
 # Basic
-name:               "surruskij"
+name:               "polycarp"
 email:              surruskij@gmail.com
 
 author:
@@ -13,7 +13,7 @@ author:
  
 
 copyright:
-  year:             2018
+  year:             2019
   name:             Daniele Ferla
 
 # Google-analytics
@@ -45,12 +45,10 @@ kramdown:
 
 # Navigation
 nav:
+  - name:           "Blog"
+    url:            "/"
   - name:           "About"
     url:            "/about"
-  - name:           "Archive"
-    url:            "/archive"
-  - name:           "Tags"
-    url:            "/tags"
 
 # Sass
 sass:

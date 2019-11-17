@@ -1,26 +1,202 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>surruskij</title>
+    <title>polycarp</title>
     <link>http://localhost:4000</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>_FORTIFY_SOURCE: explained</title>
+        <description>&lt;p&gt;C programmers absolutely know that dealing with functions that copy memory from one place to another can be quite painful: if proper bound checks are not performed, an attacker may be able to trigger a buffer overflow on a vulnerable program, thus hijacking its normal execution flow.&lt;/p&gt;
+
+&lt;p&gt;Luckily, modern compilers make available the &lt;code class=&quot;highlighter-rouge&quot;&gt;_FORTIFY_SOURCE&lt;/code&gt; macro, to further protect binaries against the most common buffer overflow attacks. Extra checks on memory are performed, and in case of imminent buffer overflow, the fortified program throws an exception that immediately terminates itself to avoid further damages.&lt;br /&gt;
+From the attacker’s point of view, one can check whether a program has been fortified during the compilation by using the &lt;code class=&quot;highlighter-rouge&quot;&gt;checksec&lt;/code&gt; command on GDB with peda/gef.&lt;/p&gt;
+
+&lt;p&gt;Fortifying a program means that we instruct the compiler to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Print warnings &lt;strong&gt;at compile time&lt;/strong&gt;, if the destination buffer of one the supported functions (see below) is smaller than the source. This can be done only if the size of source and destination are known at compile time, otherwise no warning is raised.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Replace the calls to supported functions with calls their safer counterparts (easily recognisable since they are all named &lt;code class=&quot;highlighter-rouge&quot;&gt;__*_chk&lt;/code&gt;). These alternative functions are semantically equivalent to the original ones, but they also take the size of the destination buffer as parameter, in order to abort the program &lt;strong&gt;at runtime&lt;/strong&gt; if an overflow occurs.&lt;/p&gt;
+
+    &lt;p&gt;Note that, since executing bound checks sligthly impacts on the performance, the substitution is takes place only when needed: in case a call to a function is recognised as safe (source and destination size are known and correct), the call site remains untouched.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This macro is meant to protect the program only in presence of functions for the manipulation of strings and memory, such as:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;memcpy, memset, stpcpy, strcpy, strncpy, strcat, strncat, sprintf, snprintf, vsprintf, vsnprintf, gets, ...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The complete list of supported functions can be deduced by looking at the contents of the &lt;code class=&quot;highlighter-rouge&quot;&gt;debug/&lt;/code&gt; folder in the glibc &lt;a href=&quot;https://sourceware.org/git/?p=glibc.git;a=tree;f=debug&quot;&gt;source tree&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To take advantage of this macro, we must follow the steps below:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Ensure that all the needed headers have been specified: fortify doesn’t work in presence of implicit declarations.&lt;/li&gt;
+  &lt;li&gt;Instruct the compiler to use an optimisation level equal or higher than 1 (&lt;code class=&quot;highlighter-rouge&quot;&gt;-O1&lt;/code&gt;).&lt;/li&gt;
+  &lt;li&gt;Pass the flag &lt;code class=&quot;highlighter-rouge&quot;&gt;-D_FORTIFY_SOURCE=1&lt;/code&gt;, to perform just basic checks that shouldn’t change the behaviour of programs, or &lt;code class=&quot;highlighter-rouge&quot;&gt;-D_FORTIFY_SOURCE=2&lt;/code&gt;, to add some more checking, but with the possibility that some conforming programs might fail.&lt;/li&gt;
+  &lt;li&gt;Profit!&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;proof&quot;&gt;Proof&lt;/h3&gt;
+
+&lt;p&gt;Here we can show the difference between a fortified program and an unprotected one. We can use the unsecure program below as example:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;strcpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It simply takes the 1st argument, copies it in a buffer of 5 bytes, then prints its contents. A buffer overflow is triggered as soon as we supply an argument which is longer than the buffer.
+We can now compile the program twice: one with the &lt;code class=&quot;highlighter-rouge&quot;&gt;D_FORTIFY_SOURCE&lt;/code&gt; flag, the other without it. To obtain comparable results, we can use &lt;code class=&quot;highlighter-rouge&quot;&gt;-O1&lt;/code&gt; as optimisation level:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ gcc example.c -o example -O1
+$ gcc example.c -o example_fortified -D_FORTIFY_SOURCE=1 -O1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When compiling the program without the fortify macro, the obtained disassembly of the main function is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-asm&quot;&gt;   0x0000000000001145 &amp;lt;+0&amp;gt;:	push   rbx
+   0x0000000000001146 &amp;lt;+1&amp;gt;:	sub    rsp,0x10
+   0x000000000000114a &amp;lt;+5&amp;gt;:	mov    rsi,QWORD PTR [rsi+0x8]
+   0x000000000000114e &amp;lt;+9&amp;gt;:	lea    rbx,[rsp+0xb]
+   0x0000000000001153 &amp;lt;+14&amp;gt;:	mov    rdi,rbx
+   0x0000000000001156 &amp;lt;+17&amp;gt;:	call   0x1030 &amp;lt;strcpy@plt&amp;gt;
+   0x000000000000115b &amp;lt;+22&amp;gt;:	mov    rdi,rbx
+   0x000000000000115e &amp;lt;+25&amp;gt;:	call   0x1040 &amp;lt;puts@plt&amp;gt;
+   0x0000000000001163 &amp;lt;+30&amp;gt;:	mov    eax,0x0
+   0x0000000000001168 &amp;lt;+35&amp;gt;:	add    rsp,0x10
+   0x000000000000116c &amp;lt;+39&amp;gt;:	pop    rbx
+   0x000000000000116d &amp;lt;+40&amp;gt;:	ret
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On the other hand, when compiling the fortified program, no warning is shown by the compiler, since the size of the source buffer (&lt;code class=&quot;highlighter-rouge&quot;&gt;argv[1]&lt;/code&gt;) cannot be known at compile time. However, looking at disassembly we have:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-asm&quot;&gt;   0x0000000000001145 &amp;lt;+0&amp;gt;:	push   rbx
+   0x0000000000001146 &amp;lt;+1&amp;gt;:	sub    rsp,0x10
+   0x000000000000114a &amp;lt;+5&amp;gt;:	mov    rsi,QWORD PTR [rsi+0x8]
+   0x000000000000114e &amp;lt;+9&amp;gt;:	lea    rbx,[rsp+0xb]
+   0x0000000000001153 &amp;lt;+14&amp;gt;:	mov    edx,0x5			# length of buf
+   0x0000000000001158 &amp;lt;+19&amp;gt;:	mov    rdi,rbx
+   0x000000000000115b &amp;lt;+22&amp;gt;:	call   0x1040 &amp;lt;__strcpy_chk@plt&amp;gt;
+   0x0000000000001160 &amp;lt;+27&amp;gt;:	mov    rdi,rbx
+   0x0000000000001163 &amp;lt;+30&amp;gt;:	call   0x1030 &amp;lt;puts@plt&amp;gt;
+   0x0000000000001168 &amp;lt;+35&amp;gt;:	mov    eax,0x0
+   0x000000000000116d &amp;lt;+40&amp;gt;:	add    rsp,0x10
+   0x0000000000001171 &amp;lt;+44&amp;gt;:	pop    rbx
+   0x0000000000001172 &amp;lt;+45&amp;gt;:	ret
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The call to &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; has been replaced with &lt;code class=&quot;highlighter-rouge&quot;&gt;__strcpy_chk&lt;/code&gt;, which checks if the destination can hold all the source data even at runtime. Looking at the &lt;a href=&quot;https://sourceware.org/git/?p=glibc.git;a=blob;f=debug/strcpy_chk.c&quot;&gt;source code&lt;/a&gt;, the inner workings of this new function seem pretty straightforward:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* Copy SRC to DEST with checking of destination buffer overflow.  */&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__strcpy_chk&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destlen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;len&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strlen&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;len&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;destlen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;__chk_fail&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;memcpy&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;len&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s test the behaviour at runtime:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ./example AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Segmentation fault
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ./example_fortified AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+*** buffer overflow detected ***: ./example_fortified terminated
+Aborted
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;limitations&quot;&gt;Limitations&lt;/h3&gt;
+
+&lt;p&gt;Even if the macro is highly effective in cases like the one above, not all the possible scenarios in which a buffer overflow occurs can be handled.&lt;/p&gt;
+
+&lt;p&gt;Let’s suppose to have the following program:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strtol&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;strcpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This program takes two arguments: the first is used as length for &lt;code class=&quot;highlighter-rouge&quot;&gt;buf&lt;/code&gt;, the second is just the string we want to copy in it. Hence, this time, the buffer size is chosen at runtime.&lt;/p&gt;
+
+&lt;p&gt;Compiling with &lt;code class=&quot;highlighter-rouge&quot;&gt;gcc limited.c -o limited -O1 -D_FORTIFY_SOURCE=2&lt;/code&gt;, no warning is showed, and disassemblying the binary we obtain:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	 0x0000000000001155 &amp;lt;+0&amp;gt;:	push   rbp
+   0x0000000000001156 &amp;lt;+1&amp;gt;:	mov    rbp,rsp
+   0x0000000000001159 &amp;lt;+4&amp;gt;:	push   rbx
+   0x000000000000115a &amp;lt;+5&amp;gt;:	sub    rsp,0x8
+   0x000000000000115e &amp;lt;+9&amp;gt;:	mov    rbx,rsi
+   0x0000000000001161 &amp;lt;+12&amp;gt;:	mov    rdi,QWORD PTR [rsi+0x8]
+   0x0000000000001165 &amp;lt;+16&amp;gt;:	mov    edx,0xa
+   0x000000000000116a &amp;lt;+21&amp;gt;:	mov    esi,0x0
+   0x000000000000116f &amp;lt;+26&amp;gt;:	call   0x1050 &amp;lt;strtol@plt&amp;gt;
+   0x0000000000001174 &amp;lt;+31&amp;gt;:	add    rax,0xf
+   0x0000000000001178 &amp;lt;+35&amp;gt;:	and    rax,0xfffffffffffffff0
+   0x000000000000117c &amp;lt;+39&amp;gt;:	sub    rsp,rax
+   0x000000000000117f &amp;lt;+42&amp;gt;:	mov    rsi,QWORD PTR [rbx+0x10]
+   0x0000000000001183 &amp;lt;+46&amp;gt;:	mov    rdi,rsp
+   0x0000000000001186 &amp;lt;+49&amp;gt;:	call   0x1030 &amp;lt;strcpy@plt&amp;gt;
+   0x000000000000118b &amp;lt;+54&amp;gt;:	mov    rdi,rsp
+   0x000000000000118e &amp;lt;+57&amp;gt;:	call   0x1040 &amp;lt;puts@plt&amp;gt;
+   0x0000000000001193 &amp;lt;+62&amp;gt;:	mov    eax,0x0
+   0x0000000000001198 &amp;lt;+67&amp;gt;:	mov    rbx,QWORD PTR [rbp-0x8]
+   0x000000000000119c &amp;lt;+71&amp;gt;:	leave
+   0x000000000000119d &amp;lt;+72&amp;gt;:	ret
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you may notice, this time the call for &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; hasn’t been replaced, leaving the binary vulnerable:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ./limited 3 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Segmentation fault
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Hence, the macro does not help in case the size of the destination buffer cannot be known at compile time!&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;When compiling a program, using the &lt;code class=&quot;highlighter-rouge&quot;&gt;_FORTIFY_SOURCE&lt;/code&gt; flag is a good programming practice to be aware of possible vulnerabilities reading the compiler warnings, and to automatically replace vulnerable functions with safer ones. However, this only adds an extra level of security, leaving unprotected functions that take parameters not known at compile time.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 19 Feb 2019 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/2019/fortify/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/fortify/</guid>
+      </item>
+    
+      <item>
         <title>Abusing Facebook prefetching to leak users IP address and user agent</title>
-        <description>&lt;p&gt;In 2016 Facebook, aiming to improve final users experience, introduced &lt;strong&gt;link prefetching&lt;/strong&gt; as a way to reduce load time of external webpages. 
+        <description>&lt;p&gt;In 2016 Facebook, aiming to improve final users experience, introduced &lt;strong&gt;link prefetching&lt;/strong&gt; as a way to reduce the load time of external webpages. 
 As the &lt;a href=&quot;https://www.facebook.com/business/help/1514372351922333&quot;&gt;related Facebook help page&lt;/a&gt; states:&lt;/p&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Prefetching allows Facebook to download mobile content before someone clicks a link. […] When someone clicks the link or call to action on your ad, a portion of the web page it’s linked to may already have been prefetched and will appear more quickly.&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;Essentially, when you share on Facebook a rich link (i.e. a link that features title, thumbnail and description), every time someone comes across to that post, &lt;strong&gt;without even clicking it&lt;/strong&gt;, his device loads the page and stores it for a certain amount of time: if the user decides to click on link, the page is already loaded.&lt;/p&gt;
+&lt;p&gt;Essentially, when you share on Facebook a rich link (i.e., a link that features title, thumbnail, and description), every time someone comes across to that post, &lt;strong&gt;without even clicking it&lt;/strong&gt;, his device loads the page and stores it for a certain amount of time: if the user decides to click on link, the page is already loaded.&lt;/p&gt;
 
 &lt;p&gt;Cool, right? User experience can benefit from this, and page load times are slightly faster.&lt;br /&gt;
 But, as always, cool features can be used by attackers to achieve completely different results.&lt;/p&gt;
 
 &lt;p&gt;Since every time the device prefetches a webpage it fires a &lt;code class=&quot;highlighter-rouge&quot;&gt;GET&lt;/code&gt; request to the server in which the page is located, I decided to do a simple experiment within my own local network.&lt;/p&gt;
 
-&lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt;, in order to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.&lt;/p&gt;
+&lt;p&gt;I set up a simple server using &lt;code class=&quot;highlighter-rouge&quot;&gt;Flask&lt;/code&gt; to log full headers of each incoming request; then I created a new post on Facebook, sharing a rich link to my server.&lt;/p&gt;
 
 &lt;p&gt;Then, I logged in using a secondary Facebook account on my iPhone and,ì as soon as the news feed was loaded and the shared post became visible, without even touching anything, my server log started to talk very eloquently:&lt;/p&gt;
 
@@ -45,7 +221,7 @@ Accept-Encoding: gzip, deflate
 X-Fb-Http-Engine: Liger
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;There are plenty of useful information about our target:&lt;/p&gt;
+&lt;p&gt;There is plenty of useful information about our target:&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;Device model&lt;/li&gt;
   &lt;li&gt;iOS version&lt;/li&gt;
@@ -54,7 +230,7 @@ X-Fb-Http-Engine: Liger
   &lt;li&gt;IP address (so very coarse location information if the target isn’t using proxies/VPNs)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Obviously, this works also outside the local network: a simple IP logger service (like &lt;a href=&quot;https://grabify.link/&quot;&gt;Grabify&lt;/a&gt;) was enough to generate a URL that can stealthy log request headers and redirect the user wherever I want.&lt;br /&gt;
+&lt;p&gt;Obviously, this works also outside the local network: a simple IP logger service (like &lt;a href=&quot;https://grabify.link/&quot;&gt;Grabify&lt;/a&gt;) was enough to generate a URL that can stealthily log request headers and redirect the user wherever I want.&lt;br /&gt;
 The result? I was able to collect the same data with no effort.&lt;/p&gt;
 
 &lt;h3 id=&quot;affected-users&quot;&gt;Affected users&lt;/h3&gt;
@@ -63,9 +239,8 @@ The result? I was able to collect the same data with no effort.&lt;/p&gt;
 &lt;p&gt;I tried to repeat the same steps using an Android device, but without success (prefetching appears to be disabled at all).&lt;/p&gt;
 
 &lt;h3 id=&quot;unaware-users-unaware-attackers&quot;&gt;Unaware users, unaware attackers&lt;/h3&gt;
-&lt;p&gt;When it comes to describe a security/privacy vulnerability, it’s always obvious to say that users are unaware of it.&lt;br /&gt;
-In this peculiar scenario, however, attackers were unaware too (at least most of them). This is due to the fact that link prefetching was a feature enabled by default, hence potentially every person that shared rich links had the possibility to spy on users behaviour, using a profile, a group or a page as attack vector.
-Moreover, by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to strictly target an individual.&lt;/p&gt;
+&lt;p&gt;Since link prefetching was a feature enabled by default, potentially every person that shared rich links could spy on users behaviour, using a profile, a group or a page as an attack vector.
+Moreover, by using this trick and leveraging on privacy controls to shared posts, making them visible to a specific person, it was possible to target an individual strictly.&lt;/p&gt;
 
 &lt;p&gt;One can argue: “IP addresses and user agents are not such a big deal! Every time a user browses a website, he leaves the same kind of tracks behind his back”.&lt;br /&gt;
 The fact is that, in this particular situation, &lt;strong&gt;people didn’t know anything about this behaviour&lt;/strong&gt;, because:&lt;/p&gt;
@@ -79,7 +254,7 @@ The fact is that, in this particular situation, &lt;strong&gt;people didn’t kn
 An &lt;a href=&quot;https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-agent&quot;&gt;experiment&lt;/a&gt; carried by the EFF (Electronic Frontier Foundation) in 2010 showed that:&lt;/p&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Browsers usually convey between 5 and 15 bits of identifying information, about 10.5 bits on average. 
-10 bits of identifying information would allow you to be picked out of a crowd of 2^10 , or 1024 people.&lt;/p&gt;
+10 bits of identifying information would allow you to be picked out of a crowd of 2^10, or 1024 people.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;The fun fact is that in this experiment analysed user agents were like:&lt;/p&gt;
@@ -94,14 +269,14 @@ An &lt;a href=&quot;https://www.eff.org/it/deeplinks/2010/01/tracking-by-user-ag
 FBSS/3;FBCR/TIM;FBID/phone;FBLC/en_GB;FBOP/5;FBRV/127173516]
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;For this reason, even if I didn’t run any actual experiment, I believe that the number of bits of entropy on the latter kind of user agent can be far higher, thus leading to an unique identification within an even larger crowd of people.&lt;/p&gt;
+&lt;p&gt;For this reason, even if I didn’t run any actual experiment, I believe that the number of bits of entropy on the latter kind of user agent can be far higher, thus leading to a unique identification within an even larger crowd of people.&lt;/p&gt;
 
 &lt;h3 id=&quot;timetable&quot;&gt;Timetable&lt;/h3&gt;
 &lt;ul&gt;
   &lt;li&gt;11 October 2018: vulnerability found and reported to Facebook&lt;/li&gt;
   &lt;li&gt;22 October 2018: investigation started by the appropriate product team&lt;/li&gt;
   &lt;li&gt;5 November 2018 (ish): prefetching appears to be disabled, thus closing the vulnerability&lt;/li&gt;
-  &lt;li&gt;14 December 2018: official notification by the security team, saying that everything was patched&lt;/li&gt;
+  &lt;li&gt;14 December 2018: official notification by the Facebook security team, and $1000 bounty awarded&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         <pubDate>Fri, 14 Dec 2018 00:00:00 +0100</pubDate>

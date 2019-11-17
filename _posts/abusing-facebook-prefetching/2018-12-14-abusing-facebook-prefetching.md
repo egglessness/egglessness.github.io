@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Abusing Facebook prefetching to leak users IP address and user agent"
-description: "Could ever a magical feature that improves the user experience by reducing load time be exploited to get some useful data on a targeted user? C'mon it's 2018, obviously yes!"
+description: "Prefetching external links on Facebook can surely enhance the user experience, but... can it be exploited to do some reconnaissance on a target victim?"
 date: 2018-12-14
 tags: [responsible disclosure, facebook, feature abuse]
 comments: true

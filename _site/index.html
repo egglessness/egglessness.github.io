@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>surruskij</title>
+  <title>polycarp</title>
  
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicons/apple-icon-180x180.png">
   <link rel="icon" type="image/png" sizes="192x192"  href="/assets/favicons/android-icon-192x192.png">
@@ -17,20 +17,20 @@
   <link rel="stylesheet" href="/assets/css/main.css" type="text/css">
 
   <!-- Font -->
-  <link href="https://fonts.googleapis.com/css?family=Merriweather|Ubuntu+Mono|Lato" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Merriweather|Ubuntu+Mono|Lato" rel="stylesheet" lazyload>
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/brands.css" integrity="sha384-whKHCkwP9f4MyD1vda26+XRyEg2zkyZezur14Kxc784RxUU1E7HvWVYj9EoJnUV7" crossorigin="anonymous">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/fontawesome.css" integrity="sha384-WK8BzK0mpgOdhCxq86nInFqSWLzR5UAsNg0MGX9aDaIIrFWQ38dGdhwnNCAoXFxL" crossorigin="anonymous">
-  <link rel="alternate" type="application/rss+xml" title="RSS Feed for surruskij" href="/feed.xml" />
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed for polycarp" href="/feed.xml" />
   <!-- Begin Jekyll SEO tag v2.5.0 -->
-<title>surruskij</title>
+<title>polycarp</title>
 <meta name="generator" content="Jekyll v3.8.5" />
-<meta property="og:title" content="surruskij" />
+<meta property="og:title" content="polycarp" />
 <meta property="og:locale" content="en_US" />
 <link rel="canonical" href="http://localhost:4000/" />
 <meta property="og:url" content="http://localhost:4000/" />
-<meta property="og:site_name" content="surruskij" />
+<meta property="og:site_name" content="polycarp" />
 <script type="application/ld+json">
-{"url":"http://localhost:4000/","name":"surruskij","headline":"surruskij","@type":"WebSite","@context":"http://schema.org"}</script>
+{"url":"http://localhost:4000/","name":"polycarp","headline":"polycarp","@type":"WebSite","@context":"http://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 
@@ -54,30 +54,48 @@
 
 <body>
   <div class="content-container">
-    <header class="header">
-  <div class="header-title">
-     <a href="http://localhost:4000 "><img id="logo-big" src="assets/images/logo.png"></a>
+    <header>
+  <div class="header-small">
+    <a href="http://localhost:4000" target="_self"><img id="logo" src="http://localhost:4000/assets/images/logo.png"></a>
   </div>
   <nav class="header-nav">
     
     
-    <a href="/about">About</a>
+    <a href="/" target="_self">Blog</a>
+     &nbsp/&nbsp 
     
     
     
-    <a href="/archive">Archive</a>
+    <a href="/about" target="_self">About</a>
     
-    
-    
-    <a href="/tags">Tags</a>
     
     
   </nav>
 </header>
-
-<div class="list">
+<div class="page">
+  <div class="list">
 
 <!-- This loops through the paginated posts -->
+
+  <div class="list-post">
+    
+    <a href="/2019/fortify/">
+      
+      <div class="list-post-date">
+        <time>19 Feb 2019</time>
+      </div>
+      <div class="list-post-title">
+        _FORTIFY_SOURCE: explained
+      </div>
+      
+      <div class="list-post-desc">
+        Compilers like GCC and Clang give developers the possibility to secure buffers in their applications by supplying the _FORTIFY_SOURCE macro at compile time. In this post, we will see how does it work and what can it do for us.
+      </div>
+      
+    </a>
+
+
+  </div>
 
   <div class="list-post">
     
@@ -91,7 +109,7 @@
       </div>
       
       <div class="list-post-desc">
-        Could ever a magical feature that improves the user experience by reducing load time be exploited to get some useful data on a targeted user? C'mon it's 2018, obviously yes!
+        Prefetching external links on Facebook can surely enhance the user experience, but... can it be exploited to do some reconnaissance on a target victim?
       </div>
       
     </a>
@@ -137,6 +155,8 @@
 
 </div>
 
+</div>
+
 
     
 <div class="footer">
@@ -179,7 +199,7 @@
     
 
   </div>
-  © 2018 Daniele Ferla. All rights reserved.
+  © 2019 Daniele Ferla. All rights reserved.
 </div>
 
   </div>
