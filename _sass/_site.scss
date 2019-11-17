@@ -40,11 +40,11 @@ body {
   -------------- */
 
 header {
-    padding: 2% 2%;
+    padding: 1rem .7rem;
 }
 
 .header {
-    padding: 0% 2%;
+    padding: 0% .7rem;
     margin-bottom: 1.5em;
 
     &-title {
@@ -130,7 +130,7 @@ header {
   -------------- */
 
 .post {
-    padding: 0% 2%;
+    padding: 0% .7rem;
 
     &-title {
         font-family: $title-font;
@@ -206,7 +206,7 @@ header {
 
 .list {
     &-post {
-        padding: 2% 2%;
+        padding: 1rem .7rem;
 
         &:hover {
             background-color: $background-over-color;
