@@ -3,7 +3,6 @@ layout: post
 title: "No, using strncpy won't really make you safer"
 description: "Even if specifying the length of the buffer you want to operate on seems a good security practice, using strncpy instead of strcpy may help attackers to leak sensible data from your program memory."
 date: 2019-04-09
-tags: [ramblings]
 keywords:
     - strncpy
     - strcpy
