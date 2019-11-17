@@ -4,12 +4,14 @@ permalink: /about/
 layout: post
 ---
 
-Hi there! My name is Daniele and I'm a fellow researcher @ University of Bologna. 🇮🇹  
+Hi there! My name is **Daniele Ferla** and I'm a **fellow researcher** @ University of Bologna. 🇮🇹  
 
-I'm passionate about computer security, especially low-level stuff like compilers, binary exploitation and malware analysis. I always liked the "hacker's" way of solving problems: use something that was designed to do a specific job, find peculiarities in its inner workings, then exploiting its behaviour to achieve your goals.
+I'm passionate about computer security, especially **low-level stuff** like compilers, binary exploitation and malware analysis. I always liked the "hacker's" way of solving problems: use something that was designed to do a specific job, find peculiarities in its inner workings, then exploiting its behaviour to achieve your goals.
+
+Currently, my research focuses on the applicability of new methodologies to **protect industrial systems** from attackers, with the aim of building an integrated test suite to provide information about the compliance, of a given device, to the plethora of safety/security standards.
 
 Over the past few years, I've been reading lots of different blog posts on many security-related subjects, thanks to the people that took their time to write about their discoveries and thoughts.   
-I learned a lot. 
+**I learned a lot**. 
 
 I decided to begin writing on this blog to share what I learned while experimenting on my own. Also, this is a good way to practise my English writing skills.
 

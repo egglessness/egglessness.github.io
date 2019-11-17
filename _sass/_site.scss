@@ -412,3 +412,12 @@ header {
     display: inline;
     width: 1.5rem;
 }
+
+#welcome-msg {
+    background-color: $background-over-color;
+    border-color: transparent;
+    border-radius: 10px;
+    padding: .7rem;
+    font-size: .85rem;
+    margin-bottom: 1rem;
+}
