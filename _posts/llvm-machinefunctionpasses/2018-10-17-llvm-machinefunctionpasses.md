@@ -6,6 +6,13 @@ date: 2018-10-17
 tags: [llvm, tutorial]
 comments: true
 share: true
+keywords:
+    - llvm
+    - machine function pass
+    - machinefunctionpass
+    - llc
+    - compile
+    - cmake
 ---
 
 LLVM is an extremely beautiful project: its modularity enables anyone to extend the compiler infrastructure by writing modules to be used either on the backend or the frontend.

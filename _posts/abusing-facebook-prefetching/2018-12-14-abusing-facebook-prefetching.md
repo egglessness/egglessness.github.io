@@ -6,6 +6,15 @@ date: 2018-12-14
 tags: [responsible disclosure, facebook, feature abuse]
 comments: true
 share: true
+keywords:
+    - bugbounty
+    - bug bounty
+    - privacy
+    - facebook
+    - responsible disclosure
+    - feature abuse
+    - link prefetching
+    - rich link
 ---
 
 In 2016 Facebook, aiming to improve final users experience, introduced **link prefetching** as a way to reduce the load time of external webpages. 

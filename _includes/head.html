@@ -1,7 +1,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.name }}{% endif %}</title>
+  <title>{% if page.title %}{{ page.title }} | polycarp{% else %}{{ site.name }}{% endif %}</title>
  
   <link rel="apple-touch-icon" sizes="180x180" href="{{ site.baseurl }}/assets/favicons/apple-icon-180x180.png">
   <link rel="icon" type="image/png" sizes="192x192"  href="{{ site.baseurl }}/assets/favicons/android-icon-192x192.png">
@@ -18,7 +18,9 @@
   <link href="https://fonts.googleapis.com/css?family=Merriweather|Ubuntu+Mono|Lato" rel="stylesheet" lazyload>
   <link rel="alternate" type="application/rss+xml" title="RSS Feed for {{ site.name }}" href="{{ site.baseurl }}/feed.xml" />
   {% seo %}
-
+  {% if page.keywords %}
+  <meta name="keywords" content="{{ page.keywords | join: ', ' | escape }}">
+  {% endif %}
 
   {% include google-analytics.html %}
 
