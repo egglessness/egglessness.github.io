@@ -6,6 +6,37 @@
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>The hackiest way I've seen to pass WiFi credentials to an IoT device</title>
+        <description>&lt;p&gt;During the first startup of a new IoT device, users must be able to make it connect to them WiFi network. But, how it is possible to supply WiFi credentials to the device, if the device itself isn’t attached to anything?&lt;/p&gt;
+
+&lt;p&gt;Of course, the device can be shipped with some additional communication module (like Bluetooth or an ultrasound microphone) that will be used specifically to receive the network credentials. However, manufacturers may be interested in keeping production costs very low, so there’s interest in doing everything with just the WiFi module.&lt;/p&gt;
+
+&lt;p&gt;To address this problem, the most commonly adopted solution is &lt;strong&gt;AP mode&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Upon the startup, the device activates a software access point, along with a webserver and a DNS server. The user must disconnect from its home network and connect to the device AP. At this point, a setup webpage automatically appears, allowing the user to supply all the needed credentials. Once the credentials are sent, the device powers off its access point and connects itself to the home network. On the ESP8266, this can be implemented using the &lt;a href=&quot;https://github.com/tzapu/WiFiManager&quot;&gt;WiFiManager&lt;/a&gt; library.&lt;/p&gt;
+
+&lt;p&gt;Even if relatively simple, the user is forced to change its WiFi network back and forth, which may be annoying. For this reason, a second, &lt;strong&gt;hacky and more interesting solution&lt;/strong&gt; has been designed.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Smart config&lt;/strong&gt; does not even require the user to switch between the device AP and his home network, providing a seamless way to send WiFi credentials to IoT devices. 
+This time, the device puts its network interface to &lt;u&gt;promiscous mode&lt;/u&gt;, with the purpose of sniffing every packet transmitted nearby. On the other side, the user configuration app sends tons of UDP packets via broadcast in the home network, &lt;u&gt;encoding SSID and PSK&lt;/u&gt; of the WiFi network &lt;u&gt;in the length field on each packet&lt;/u&gt;. Indeed, while it is true that the content of those packets cannot be read from hosts that do not know which is the network passphrase (as our IoT device), the length field can be read with no hassle.&lt;/p&gt;
+
+&lt;p&gt;Tuya IoT devices implement this solution: we can take a look on the relative &lt;a href=&quot;https://github.com/TuyaAPI/link/blob/master/lib/link.js&quot;&gt;API&lt;/a&gt; to understand how does it work. 
+The protocol starts with the transmission of a preamble sequence, i.e. a series of UDP packets that carry, in their length field, a recognisable pattern (1,3,6,10). This helps the IoT device to filter out which device is supposed to send useful data, by looking at the source MAC address. Then, the actual data is sent over multiple UDP packets, as the length field can hold up to 2 bytes of data.&lt;/p&gt;
+
+&lt;p&gt;Here you can find some interesting material:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.espressif.com/sites/default/files/30b-esp-touch_user_guide_en_v1.1_20160412_0.pdf&quot;&gt;Documentation for the ESP8266&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/ct-Open-Source/tuya-convert/tree/master/scripts/smartconfig&quot;&gt;Python script &lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Tue, 24 Sep 2019 00:00:00 +0200</pubDate>
+        <link>http://localhost:4000/2019/hackiest-way-to-pass-wifi-credentials/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/hackiest-way-to-pass-wifi-credentials/</guid>
+      </item>
+    
+      <item>
         <title>No, using strncpy won't really make you safer</title>
         <description>&lt;p&gt;A common belief among programmers is that functions like &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; are more secure than &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt;, due to the fact that the former accepts the number of bytes to copy, while the latter doesn’t. This allows a developer to pass the size of the destination buffer to &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt;, avoiding to overflow it in case we’re copying data from a possibly unbounded source.&lt;/p&gt;
 
