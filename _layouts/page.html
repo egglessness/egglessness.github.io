@@ -1,21 +1,32 @@
 ---
 layout: default
 ---
+
+<div>
 <header>
   <div class="header-small">
     <a href="{{site.url}}{{site.baseurl}}" target="_self"><img id="logo" src="{{site.url}}{{site.baseurl}}/assets/images/logo.png" alt="logo"></a>
   </div>
   <nav class="header-nav">
     {% for nav in site.nav %}
+
     {% if nav.url contains 'http://' or nav.url contains 'https://' %}
     <a href="{{ nav.url }}">{{ nav.name }}</a>
     {% else %}
+
+    {% if nav.name == page.title %} 
+    <a href="{{ nav.url | prepend: site.baseurl }}" style="font-weight: bold;"  target="_self">{{ nav.name }}</a>
+    {%else%}
     <a href="{{ nav.url | prepend: site.baseurl }}" target="_self">{{ nav.name }}</a>
+    {%endif%}
+
     {% unless nav == site.nav.last %} &nbsp/&nbsp {% endunless %}
+
     {% endif %}
     {% endfor %}
   </nav>
 </header>
+</div>
 <div class="page">
   {{ content }}
 </div>
