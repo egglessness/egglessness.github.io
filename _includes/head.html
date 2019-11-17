@@ -1,7 +1,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% if page.title %}{{ page.title }} | polycarp{% else %}{{ site.name }}{% endif %}</title>
  
   <link rel="apple-touch-icon" sizes="180x180" href="{{ site.baseurl }}/assets/favicons/apple-icon-180x180.png">
   <link rel="icon" type="image/png" sizes="192x192"  href="{{ site.baseurl }}/assets/favicons/android-icon-192x192.png">
@@ -12,7 +11,7 @@
   <meta name="theme-color" content="#5881bf">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css" type="text/css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css" type="text/css" lazyload>
 
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css?family=Merriweather|Ubuntu+Mono|Lato" rel="stylesheet" lazyload>
@@ -21,6 +20,11 @@
   {% if page.keywords %}
   <meta name="keywords" content="{{ page.keywords | join: ', ' | escape }}">
   {% endif %}
+
+  {% unless page.title %}
+  <meta name="description" content="Just another little blog about computer security: compilers, low-level stuff, but also thoughts and ramblings.">
+  <meta name="og:description" content="Just another little blog about computer security: compilers, low-level stuff, but also thoughts and ramblings.">
+  {% endunless %}
 
   {% include google-analytics.html %}
 
