@@ -6,6 +6,60 @@
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>No, using strncpy won't really make you safer</title>
+        <description>&lt;p&gt;A common belief among programmers is that functions like &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; are more secure than &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt;, due to the fact that the former accepts the number of bytes to copy, while the latter doesn’t. This allows a developer to pass the size of the destination buffer to &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt;, avoiding to overflow it in case we’re copying data from a possibly unbounded source.&lt;/p&gt;
+
+&lt;p&gt;However, this doens’t mean that &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; is &lt;em&gt;always&lt;/em&gt; secure. In &lt;a href=&quot;https://grsecurity.net/huawei_and_security_analysis.php&quot;&gt;this article&lt;/a&gt; grsecurity researchers demonstrate that naively grouping APIs in “safe” or “unsafe”  can lead to wrong assumptions, regarding the best function to use.&lt;/p&gt;
+
+&lt;p&gt;To start with a basic example, let’s take a look at the following program:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define BUF_SIZE 10
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;secret&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;secret string!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BUF_SIZE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;strncpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BUF_SIZE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;puts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As we can see, we are diligently using &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; instead of &lt;code class=&quot;highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; because our source (&lt;code class=&quot;highlighter-rouge&quot;&gt;argv[1]&lt;/code&gt;) is potentially unbounded, so we copy only &lt;code class=&quot;highlighter-rouge&quot;&gt;BUF_SIZE&lt;/code&gt; bytes from source to destination.&lt;/p&gt;
+
+&lt;p&gt;However, if there isn’t a null terminator in the first &lt;code class=&quot;highlighter-rouge&quot;&gt;BUF_SIZE&lt;/code&gt; bytes of &lt;code class=&quot;highlighter-rouge&quot;&gt;argv[1]&lt;/code&gt;, the destination buffer will hold a non-terminated string. The result? An attacker can leak all the stack variables, until a NULL byte is reached.&lt;/p&gt;
+
+&lt;p&gt;Let’s test this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ./vuln AAAAAA
+AAAAAA
+$ ./vuln AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAsecret string!
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If we pass as argument a string longer than 10 bytes, it will be copied in &lt;code class=&quot;highlighter-rouge&quot;&gt;buf&lt;/code&gt; without the null terminator, leaking our precious secret.&lt;/p&gt;
+
+&lt;p&gt;The story on the article is even funnier: once a programmer, wanting to avoid the behaviour above without adding further checks or purposely add a NULL byte at the end of the destination buffer, replaced all the calls for &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; in the crypto module of the Linux kernel with &lt;code class=&quot;highlighter-rouge&quot;&gt;strlcpy&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;This function (non-POSIX, but available via &lt;code class=&quot;highlighter-rouge&quot;&gt;libbsd&lt;/code&gt;) is very similar to &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt;: it takes the same arguments of &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt;, but always adds a null terminator at the end of the destination buffer.&lt;/p&gt;
+
+&lt;p&gt;This substitution solved a problem, but introduced another one. Turns out that, while &lt;code class=&quot;highlighter-rouge&quot;&gt;strncpy&lt;/code&gt; also zero-pads the destination buffer in the case the source is shorter than the destination,  &lt;code class=&quot;highlighter-rouge&quot;&gt;strlcpy&lt;/code&gt; doesn’t. In the latter case, &lt;code class=&quot;highlighter-rouge&quot;&gt;strlcpy&lt;/code&gt; introduced an issue that could lead to information leak, since old data may be present on the destination buffer.&lt;/p&gt;
+
+&lt;p&gt;So, what’s the takeaway? Well, there are two actually:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Man pages are your friends. Side-effects and other warnings are always reported in the man page of each function. Take always a look to them!&lt;/li&gt;
+  &lt;li&gt;Most of the time, a function is not safe/unsafe per se, but it always depends on the context around. Being aware of this can avoid to fall into wrong assumptions.&lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Tue, 09 Apr 2019 00:00:00 +0200</pubDate>
+        <link>http://localhost:4000/2019/strncpy-wont-make-you-safer/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/strncpy-wont-make-you-safer/</guid>
+      </item>
+    
+      <item>
         <title>_FORTIFY_SOURCE: explained</title>
         <description>&lt;p&gt;C programmers absolutely know that dealing with functions that copy memory from one place to another can be quite painful: if proper bound checks are not performed, an attacker may be able to trigger a buffer overflow on a vulnerable program, thus hijacking its normal execution flow.&lt;/p&gt;
 
