@@ -6,7 +6,7 @@
 name:               "polycarp - random notes on computer security"
 
 author:
-  twitter:          surruskij
+  twitter:          egglessness
   linkedin:         danieleferla
  
 
@@ -23,7 +23,7 @@ disqus:
   id:               "surruskij-blog"
 
 # URL
-url:                "https://p0lycarp.github.io" # the base hostname & protocol for your site
+url:                "https://egglessness.github.io" # the base hostname & protocol for your site
 # url:                "http://localhost:4000" # use this url when you develop
 baseurl:            "" # the subpath of your site, e.g. /blog
 

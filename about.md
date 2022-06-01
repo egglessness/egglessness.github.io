@@ -4,7 +4,7 @@ permalink: /about/
 layout: post
 ---
 
-Hi there! My name is **Daniele Ferla** and I'm a **fellow researcher** @ University of Bologna. 🇮🇹  
+Hi there! My name is **Daniele Ferla** and I'm a Cyber Security engineer. 🇮🇹  
 
 I'm passionate about computer security, especially **low-level stuff** like compilers, binary exploitation and malware analysis. I always liked the "hacker's" way of solving problems: use something that was designed to do a specific job, find peculiarities in its inner workings, then exploiting its behaviour to achieve your goals.
 
